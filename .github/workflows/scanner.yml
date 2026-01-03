@@ -3,7 +3,7 @@ name: Daily NSE Pattern Scanner
 on:
   schedule:
     # 4:30 PM IST = 11:00 AM UTC
-    - cron: "55 10 * * 1-6"
+    - cron: "30 8 * * 1-6"
   workflow_dispatch:
 
 permissions:
