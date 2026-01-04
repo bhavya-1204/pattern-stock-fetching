@@ -1,5 +1,4 @@
 from pattern_fetching import index
-from datetime import datetime
 
 df = index()
 

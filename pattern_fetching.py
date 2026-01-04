@@ -8,13 +8,9 @@ Original file is located at
 """
 
 # from flask import Flask, request, render_template
-import numpy as np
 import pandas as pd
 import yfinance as yf
-from datetime import datetime, timedelta
 import warnings
-import os
-import time
 
 # Suppress warnings
 warnings.filterwarnings('ignore')
@@ -41,13 +37,10 @@ def flag(data):
   result = []
   c_poles = poles(data)
   for pole_i in c_poles:
-    # print(pole_i)
     flag = 0
     pole_high = data['High'].iloc[pole_i].item()
-    pole_close = data['Close'].iloc[pole_i].item()
-    pole_open = data['Open'].iloc[pole_i].item()
     pole_low = data['Low'].iloc[pole_i].item()
-    # pole_half = round((pole_close - pole_open)/2,2) + pole_open #1
+
     price_diff = round((pole_high - pole_low),2) #1
     pole_618 = round(pole_high - (price_diff*0.618),2) #1
     if pole_i+7 >= len(data):
@@ -57,7 +50,6 @@ def flag(data):
         if i >= len(data):
           continue
         flag_close = data['Close'].iloc[i].item()
-        flag_low = data['Low'].iloc[i].item()
 
         flag_09ema = data['09_ema'].iloc[i]
         flag_20ema = data['20_ema'].iloc[i]
@@ -66,8 +58,7 @@ def flag(data):
         if pd.isna(flag_09ema) or pd.isna(flag_20ema):
             break
 
-        if flag_close > pole_high or flag_close < pole_618 or flag_close < flag_09ema or flag_close < flag_20ema:   # or flag_low < pole_half
-          # print(f"{pole_high}  false for {flag_close}---------"" {i})
+        if flag_close > pole_high or flag_close < pole_618 or flag_close < flag_09ema or flag_close < flag_20ema:
           break
         else:
           flag+=1
@@ -78,15 +69,13 @@ def flag(data):
                 'end index' : data.index[pole_i + flag].date(),
                 'price' : data['Close'].iloc[-1].item()
             })
-          # print(f"{flag} for {pole_i}")
 
   return result
 
 def index():
   all_results = []
-  # symbol_name_csv = pd.read_csv('EQUITY_L_LL.csv')
-  # nse_stock = [symbol + '.NS' for symbol in symbol_name_csv['Symbol']]
-  nse_stock = ['KOPRAN.NS', 'JWL.NS', 'KMEW.NS'] #'JWL.NS'
+  symbol_name_csv = pd.read_csv('EQUITY_L_LL.csv')
+  nse_stock = [symbol + '.NS' for symbol in symbol_name_csv['Symbol']]
   for ticker in nse_stock:
     data = yf.download(ticker, period='150d', interval='1d', progress=False) #1
     # Check if data is not empty and meets price condition

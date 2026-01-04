@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 from streamlit_autorefresh import st_autorefresh
-from datetime import datetime
 
 st.set_page_config(page_title="Daily NSE Scanner", layout="wide")
 
@@ -10,11 +9,6 @@ st.caption("Auto-updated after GitHub Actions run")
 
 # 🔁 Auto refresh every 2 minutes
 st_autorefresh(interval=120_000, key="refresh")
-
-# # 🔥 CHANGE THESE
-# GITHUB_USERNAME = "<USERNAME>"
-# GITHUB_REPO = "<REPO>"
-# BRANCH = "main"
 
 CSV_URL = f"https://raw.githubusercontent.com/bhavya-1204/pattern-stock-fetching/master/latest_output.csv"
 

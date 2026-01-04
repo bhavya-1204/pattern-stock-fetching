@@ -1,0 +1,9 @@
+# Dev container
+.devcontainer/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# OS
+.DS_Store
