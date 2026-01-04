@@ -1,26 +1,40 @@
 import streamlit as st
 import pandas as pd
-# from streamlit_autorefresh import st_autorefresh
+from streamlit_autorefresh import st_autorefresh
+from datetime import datetime
 
 st.set_page_config(page_title="Daily NSE Scanner", layout="wide")
 
 st.title("📊 Daily NSE Pattern Scanner")
 st.caption("Auto-updated after GitHub Actions run")
 
-# 🔁 auto refresh every 2 minutes
-# st_autorefresh(interval=120_000, key="refresh")
+# 🔁 Auto refresh every 2 minutes
+st_autorefresh(interval=120_000, key="refresh")
 
-# 🔥 READ DIRECTLY FROM GITHUB
-CSV_URL = "https://raw.githubusercontent.com/bhavya-1204/pattern-stock-fetching/master/latest_output.csv"
+# # 🔥 CHANGE THESE
+# GITHUB_USERNAME = "<USERNAME>"
+# GITHUB_REPO = "<REPO>"
+# BRANCH = "main"
+
+CSV_URL = f"https://raw.githubusercontent.com/bhavya-1204/pattern-stock-fetching/master/latest_output.csv"
+
+@st.cache_data(ttl=60)
+def load_data(url):
+    return pd.read_csv(url)
 
 try:
-    df = pd.read_csv(CSV_URL)
+    df = load_data(CSV_URL)
 
     if not df.empty:
         st.success(f"Patterns found: {len(df)}")
         st.dataframe(df, use_container_width=True)
+
+        # last updated time
+        if "scan_time" in df.columns:
+            last_update = pd.to_datetime(df["scan_time"].iloc[0])
+            st.caption(f"🕒 Last scan: {last_update}")
     else:
         st.warning("Scanner ran, but no patterns found.")
 
-except Exception as e:
-    st.error("Unable to fetch latest output yet.")
+except Exception:
+    st.error("Waiting for latest scan output…")
