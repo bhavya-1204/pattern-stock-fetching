@@ -11,7 +11,7 @@ FILE = Path(__file__).parent / "latest_output.csv"
 
 # --- Manual refresh button (no reboot) ---
 if st.button("🔄 Refresh data"):
-    st.experimental_rerun()
+    st.rerun()
 
 # --- Always read fresh file ---
 if FILE.exists():
