@@ -7,3 +7,6 @@ __pycache__/
 
 # OS
 .DS_Store
+
+#file that I want to ignore
+test.py

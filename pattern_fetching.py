@@ -12,10 +12,12 @@ pd.options.mode.chained_assignment = None
 def calculate_ema(df, period):
     """
     Calculate Exponential Moving Average (EMA) for a given period.
-    Returns None if insufficient data.
+    Returns a Series of NaNs if insufficient data for calculation, otherwise the EMA Series.
     """
     if len(df) < period:
-        return None
+        # Return a Series of NaNs of the same length as 'Close' to maintain DataFrame structure
+        # and index alignment.
+        return pd.Series([np.nan] * len(df), index=df.index)
     return df['Close'].ewm(span=period, adjust=False).mean()
 
 def poles(data):
@@ -59,6 +61,11 @@ def flag(data, stock_ticker): # Added stock_ticker parameter
       flag_open = data['Open'].iloc[i].item()
       # flag_high = data['High'].iloc[i].item()
       flag_low = data['Low'].iloc[i].item()
+
+      # Changed to only check for NaN, as calculate_ema will now return NaN instead of None
+      if pd.isna(data['20_ema'].iloc[i].item()):
+        return False, None, None, None
+
       flag_09ema = data['09_ema'].iloc[i].item()
       flag_20ema = data['20_ema'].iloc[i].item()
 
