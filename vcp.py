@@ -140,7 +140,7 @@ def index():
 
       if check_vcp:
         result.append({
-            'Stock name' : ticker,
+            'Stock name' : ticker.split('.')[0],
             'Start date' : start_date,
             'End date' : end_date,
             'Price' : data['Close'].iloc[-1].item()
