@@ -31,7 +31,7 @@ jobs:
           python scanner.py
 
       - name: Write last updated timestamp
-        run: echo "$(date -u '+%d %b %Y, %I:%M %p UTC')" > last_updated.txt
+        run: echo "$(TZ='Asia/Kolkata' date '+%d %b %Y, %I:%M %p IST')" > last_updated.txt
 
       - name: Commit latest output
         run: |

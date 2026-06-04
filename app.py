@@ -22,6 +22,10 @@ st.markdown("""
     color: #6c757d;
     margin-bottom: 40px;
 }
+.timestamp {
+    text-align: center;
+    margin-bottom: 40px;
+}
 .card {
     background: #ffffff;
     border-radius: 16px;
