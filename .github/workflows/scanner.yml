@@ -30,6 +30,9 @@ jobs:
         run: |
           python scanner.py
 
+      - name: Write last updated timestamp
+        run: echo "$(date -u '+%d %b %Y, %I:%M %p UTC')" > last_updated.txt
+
       - name: Commit latest output
         run: |
           git config --global user.name "github-actions"
@@ -37,5 +40,6 @@ jobs:
           git add output/latest_output.csv
           git add output/future_output.csv
           git add output/vcp_output.csv
+          git add last_updated.txt
           git commit -m "Daily scan result $(date -u)" || echo "No changes"
           git push

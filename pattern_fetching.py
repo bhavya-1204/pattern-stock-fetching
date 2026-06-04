@@ -50,7 +50,7 @@ def flag(data, stock_ticker): # Added stock_ticker parameter
   count = 0
   till_condition = len(data) - main_candle_idx
 
-  if main_candle_close > main_candle_open and till_condition>10:
+  if main_candle_close > main_candle_open and till_condition > 10:
 
     for i in range(main_candle_idx+1, len(data)):
       # If this condition is met, explicitly return to avoid implicit None

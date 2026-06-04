@@ -1,4 +1,5 @@
 import streamlit as st
+import os
 
 # ---------- Page config ----------
 st.set_page_config(
@@ -47,6 +48,16 @@ st.markdown("""
 # ---------- Header ----------
 st.markdown('<div class="main-title">📈 STOCK SELECTION DASHBOARD</div>', unsafe_allow_html=True)
 st.markdown('<div class="sub-title">Rocket Base, F&O and VCP scanner</div>', unsafe_allow_html=True)
+
+# ---------- Last Updated Timestamp ----------
+timestamp_file = "last_updated.txt"
+if os.path.exists(timestamp_file):
+    with open(timestamp_file, "r") as f:
+        last_updated = f.read().strip()
+    st.markdown(
+        f'<div class="timestamp">🕒 Last updated: {last_updated}</div>',
+        unsafe_allow_html=True
+    )
 
 # ---------- 3 Column Layout ----------
 col1, col2, col3 = st.columns(3, gap="large")
