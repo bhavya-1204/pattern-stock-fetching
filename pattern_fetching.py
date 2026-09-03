@@ -46,47 +46,64 @@ def flag(data, stock_ticker): # Added stock_ticker parameter
   main_candle_low = data['Low'].iloc[main_candle_idx].item()
   main_candle_open = data['Open'].iloc[main_candle_idx].item()
   main_candle_close = data['Close'].iloc[main_candle_idx].item()
+  start_date = main_candle_date.date()
 
   count = 0
   till_condition = len(data) - main_candle_idx
+  # print(till_condition)
+  main_condition = (main_candle_close - main_candle_low)*100/main_candle_low
+  # if main_candle_close > main_candle_open and till_condition > 10:
+  if main_candle_close > main_candle_open and main_condition >= 6 and till_condition > 5:
 
-  if main_candle_close > main_candle_open and till_condition > 10:
-
+    count_negative = 0
     for i in range(main_candle_idx+1, len(data)):
       # If this condition is met, explicitly return to avoid implicit None
-      if main_candle_idx+8 > len(data):
-        return False, None, None, None
+      if main_candle_idx+4 > len(data):
+        return False, None, None, None, None
 
+      pre_flag_close = data['Close'].iloc[i-1].item()    
       flag_close = data['Close'].iloc[i].item()
       flag_open = data['Open'].iloc[i].item()
       # flag_high = data['High'].iloc[i].item()
       flag_low = data['Low'].iloc[i].item()
 
+      flag_condition = (flag_close-pre_flag_close)*100/pre_flag_close
+      # print(flag_condition)
+
+      if flag_condition<0:
+        count_negative+=1
+        # print(count_negative)
+      if count_negative > 2:
+        return False, None, None, None, None
+
+      # if abs(flag_condition)>3:
+        # return False, None, None, None
+
       # Changed to only check for NaN, as calculate_ema will now return NaN instead of None
       if pd.isna(data['20_ema'].iloc[i].item()):
-        return False, None, None, None
+        return False, None, None, None, None
 
       flag_09ema = data['09_ema'].iloc[i].item()
       flag_20ema = data['20_ema'].iloc[i].item()
 
       # If EMA is NaN, it's not a valid flag condition. Explicitly return.
       if pd.isna(flag_09ema) or pd.isna(flag_20ema):
-        return False, None, None, None
+        return False, None, None, None, None
 
       if flag_09ema < flag_20ema:
-        return False, None, None, None
+        return False, None, None, None, None
 
-      if flag_close > main_candle_high or flag_open < main_candle_low or flag_low < main_candle_low or flag_close < main_candle_low or flag_close < flag_09ema:
-        return False, None, None, None
+      if flag_close > main_candle_high or flag_open > main_candle_high or flag_open < main_candle_low or flag_low < main_candle_low or flag_close < main_candle_low or flag_close < flag_09ema or flag_open < flag_09ema:
+        return False, None, None, None, None
       else:
         count+=1
         if count>=till_condition-1:
           end_date = data.index[i].date()
-          return True, stock_name, price, end_date
+          return True, stock_name, price, start_date, end_date
 
   # If the loop finishes or doesn't execute (e.g., range is empty),
   # this ensures a tuple is always returned instead of implicit None.
-  return False, stock_name, price, None
+  return False, stock_name, price, None, None
 
 def index():
   all_results = []
@@ -105,22 +122,25 @@ def index():
   )
   symbol_name_csv = pd.read_csv(StringIO(response.text))
   nse_stock = [symbol + '.NS' for symbol in symbol_name_csv['SYMBOL']]
+  
   for ticker in nse_stock:
     data = yf.download(ticker, period='150d', interval='1d', progress=False) #1
-
+  
     # Check if data is not empty and meets price condition
-    if not data.empty and round(data['Close'].iloc[-1].item(),2) >= 100 and data['Volume'].iloc[-1].item() > 150000:
+    # if not data.empty and round(data['Close'].iloc[-1].item(),2) >= 100 and data['Volume'].iloc[-1].item() > 150000:
+    if not data.empty:
       data['09_ema'] = calculate_ema(data,9)
       data['20_ema'] = calculate_ema(data,20)
-      data = data.tail(20).round(2)
+      data = data.tail(6).round(2)
 
       # Pass ticker to the flag function
-      flagi, stock_name, price, end_date = flag(data, ticker) # Modified call site
+      flagi, stock_name, price, start_date, end_date = flag(data, ticker) # Modified call site
 
       if flagi:
         all_results.append({
             'ticker name' : stock_name,
             'price' : price,
+            'start date': start_date,
             'end date': end_date
         })
 

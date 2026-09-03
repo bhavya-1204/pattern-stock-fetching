@@ -12,3 +12,6 @@ __pycache__/
 
 #file that I want to ignore
 test.py
+
+#notebook
+notebook
