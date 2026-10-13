@@ -2,16 +2,26 @@ name: Daily NSE Pattern Scanner
 
 on:
   schedule:
-    # 3:30 PM IST = 10:00 AM UTC
-    - cron: "0 10 * * 1-5"
+    # 4:00 PM IST = 10:30 AM UTC (30 min after NSE close, so end-of-day data is ready)
+    - cron: "30 10 * * 1-5"
   workflow_dispatch:
 
 permissions:
   contents: write
 
+# Prevent overlapping runs from clashing on git push
+concurrency:
+  group: nse-scanner
+  cancel-in-progress: false
+
+env:
+  TZ: Asia/Kolkata
+  PYTHONUNBUFFERED: "1"
+
 jobs:
   scan:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout repository
@@ -21,25 +31,47 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements.txt
 
       - name: Install dependencies
         run: |
+          python -m pip install --upgrade pip
           pip install -r requirements.txt
 
       - name: Run scanner
         run: |
-          python scanner.py
+          mkdir -p output logs
+          python scanner.py 2>&1 | tee logs/scanner.log
 
       - name: Write last updated timestamp
-        run: echo "$(TZ='Asia/Kolkata' date '+%d %b %Y, %I:%M %p IST')" > last_updated.txt
+        run: date '+%d %b %Y, %I:%M %p IST' > last_updated.txt
 
       - name: Commit latest output
         run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "actions@github.com"
-          git add output/latest_output.csv
-          git add output/future_output.csv
-          git add output/vcp_output.csv
-          git add last_updated.txt
-          git commit -m "Daily scan result $(date -u)" || echo "No changes"
-          git push
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Stage only the files that actually exist
+          for f in output/latest_output.csv output/future_output.csv output/vcp_output.csv last_updated.txt; do
+            [ -f "$f" ] && git add "$f" || echo "Skipping missing file: $f"
+          done
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          git commit -m "Daily scan result $(date '+%Y-%m-%d %H:%M IST')"
+
+          # Rebase on remote in case something else pushed meanwhile
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+
+      - name: Upload logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scanner-logs
+          path: logs/
+          retention-days: 7
