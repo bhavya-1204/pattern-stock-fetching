@@ -12,6 +12,7 @@ __pycache__/
 
 #file that I want to ignore
 test.py
+app.py
 
 #notebook
 notebook
