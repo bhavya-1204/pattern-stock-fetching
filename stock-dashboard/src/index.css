@@ -1,50 +1,55 @@
-@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
 @import "tailwindcss";
 
-/* Light/dark colors switch automatically with the system setting */
-:root {
-  --bg: #f4f6fa;
-  --panel: #ffffff;
-  --line: #d9e0ec;
-  --ink: #14233b;
-  --muted: #5a6d8a;
-  --accent: #b9770a;
-  --neg: #c73a3a;
-  --pos: #0f9d74;
-  color-scheme: light;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0f1b2d;
-    --panel: #16263d;
-    --line: #26395a;
-    --ink: #e8eef7;
-    --muted: #8fa3c0;
-    --accent: #f2b84b;
-    --neg: #ff7a7a;
-    --pos: #4fd1a5;
-    color-scheme: dark;
-  }
+/*
+  Direction: high-contrast dark "trading ledger".
+  - Ink-slate background, warm paper-white text, one amber signal colour.
+  - Instrument Serif for headings, Plus Jakarta Sans for UI, JetBrains Mono for data.
+  - Structure comes from 1px hairlines (rgba(255,255,255,.08)), not shadows or boxes.
+  - Radius: 2px on controls, 4px on the table. Spacing on a 4px grid.
+*/
+@theme {
+  --font-serif: "Instrument Serif", Georgia, serif;
+  --font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --color-bg: #0b0e13;
+  --color-surface: #11151c;
+  --color-hair: rgba(255, 255, 255, 0.08);
+  --color-ink: #ece8df;
+  --color-muted: #8b93a1;
+  --color-signal: #e8a33d;
+  --color-neg: #ff7a6b;
+  --color-pos: #5fd3a0;
 }
 
-@theme inline {
-  --font-sans: "Manrope", system-ui, sans-serif;
-  --color-bg: var(--bg);
-  --color-panel: var(--panel);
-  --color-line: var(--line);
-  --color-ink: var(--ink);
-  --color-muted: var(--muted);
-  --color-accent: var(--accent);
-  --color-neg: var(--neg);
-  --color-pos: var(--pos);
+html {
+  color-scheme: dark;
 }
-
 body {
-  @apply bg-bg font-sans text-ink antialiased;
-  background-image: radial-gradient(1000px 420px at 12% -8%, color-mix(in srgb, var(--accent) 16%, transparent), transparent);
-  background-repeat: no-repeat;
+  @apply bg-bg font-sans text-[15px] leading-relaxed text-ink antialiased;
+}
+::selection {
+  background: rgba(232, 163, 61, 0.35);
 }
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--color-signal);
   outline-offset: 2px;
+}
+
+/* One orchestrated reveal on the home page load */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(12px); }
+}
+.rise {
+  animation: rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rise { animation: none; }
+  * { transition-duration: 0.01ms !important; }
+}
+
+.thin-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
 }
